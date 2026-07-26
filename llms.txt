@@ -1,0 +1,30 @@
+# generation-audit
+
+> An Agent Skill that audits self-authored Claude Code assets (rules / CLAUDE.md / skills / agents) against the live runtime layer (system prompt + tool descriptions) when a model generation changes. It captures the runtime layer in verbatim quotes, classifies mismatches as conflict / redundancy / drift, judges each with an intent / evidence / freshness / expiry frame, and hands the evidence dossier to per-asset-class stocktake skills for verdicts. It holds no verdicts itself.
+
+The premise: rules written to compensate for a previous model generation's weaknesses become conflict cost on the next generation — contradictory instructions co-loaded in the same context that the model must silently resolve. The canonical collation reference is what is actually loaded at inference time, not official docs (which are never loaded — divergence from them is drift, not conflict).
+
+## Core model
+
+- **Runtime layer capture**: theme-driven verbatim quoting from the live session, with self-report caveats (zero detection ≠ no conflict; reproduce in a second session before acting).
+- **Three-way classification**: conflict (co-loaded contradiction — always for rules/CLAUDE.md, at fire-time for skills, at invocation for agents), redundancy (substrate already says it), drift (divergence from unloaded official guidance).
+- **Four-lens judgment**: intent / evidence / freshness / expiry. "Conflict = bad" is never mechanically applied — deliberate overrides exist.
+- **Verdict delegation**: evidence goes to rules-stocktake (rules), skill-stocktake (skills), agent-stocktake (agents); CLAUDE.md is handled inline with one-by-one confirmation.
+- **Encoded pitfalls**: machine verification (build/tests/hooks) is exempt from "delete verification steps"; direction-reversed instructions need inversion, not deletion.
+
+## Files
+
+- [SKILL.md](skills/generation-audit/SKILL.md): the full skill definition — Phases 1–4, classification table, judgment frame, delegation map.
+- [README.md](README.md): overview, install, companion skills, provenance.
+- [README.ja.md](README.ja.md): Japanese README.
+- [CHANGELOG.md](CHANGELOG.md): version history.
+
+## Boundaries
+
+- NOT for routine single-layer audits (call the stocktake skills directly).
+- NOT for rule compliance measurement (that is skill-comply) or whole-config GC (that is config-gc).
+- First validated on the Claude 4 → Claude 5 generation change (2026-07; always-loaded residency 5,789 → 2,463 words).
+
+## About
+
+Implements the model-generation trigger of Scaffold Dissolution in the Agent Knowledge Cycle (AKC, DOI 10.5281/zenodo.19200726). Companion of rules-stocktake, skill-stocktake, and agent-stocktake. Author: shimo4228. License: MIT.

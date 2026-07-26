@@ -1,0 +1,12 @@
+{
+  "name": "generation-audit",
+  "version": "1.0.0",
+  "description": "Model-generation-change audit for self-authored Claude Code assets — capture the live runtime layer (system prompt + tool descriptions), classify mismatches as conflict / redundancy / drift, judge with the intent / evidence / freshness / expiry frame, and hand evidence to the stocktake skills for verdicts.",
+  "author": "shimo4228",
+  "license": "MIT",
+  "skills": [
+    {
+      "path": "skills/generation-audit/SKILL.md"
+    }
+  ]
+}
