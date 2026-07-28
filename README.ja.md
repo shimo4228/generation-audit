@@ -48,7 +48,7 @@ Phase 4 は verdict を 3 兄弟の stocktake に委譲する。無くても動�
 
 - [`rules-stocktake`](https://github.com/shimo4228/rules-stocktake) — 常駐 rules（residency cost model）
 - [`skill-stocktake`](https://github.com/shimo4228/skill-stocktake) — 導入済み skills（trigger-pollution cost model）
-- `agent-stocktake` — agent 定義（ハイブリッド cost model。[claude-harness](https://github.com/shimo4228/claude-harness) で公開）
+- [`agent-stocktake`](https://github.com/shimo4228/agent-stocktake) — agent 定義（ハイブリッド cost model）
 
 ## 出自
 

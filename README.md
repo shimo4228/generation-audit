@@ -50,7 +50,7 @@ Phase 4 delegates verdicts to the three stocktake siblings. The skill degrades g
 
 - [`rules-stocktake`](https://github.com/shimo4228/rules-stocktake) — always-loaded rules (residency cost model)
 - [`skill-stocktake`](https://github.com/shimo4228/skill-stocktake) — installed skills (trigger-pollution cost model)
-- `agent-stocktake` — agent definitions (hybrid cost model; published in [claude-harness](https://github.com/shimo4228/claude-harness))
+- [`agent-stocktake`](https://github.com/shimo4228/agent-stocktake) — agent definitions (hybrid cost model)
 
 ## Provenance
 
