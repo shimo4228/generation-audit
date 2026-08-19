@@ -2,7 +2,7 @@ Language: English | [日本語](README.ja.md)
 
 # generation-audit
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/shimo4228/generation-audit) [![GitMCP](https://img.shields.io/endpoint?url=https://gitmcp.io/badge/shimo4228/generation-audit)](https://gitmcp.io/shimo4228/generation-audit)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/shimo4228/generation-audit)
 
 An [Agent Skill](https://agentskills.io/specification) that runs a **model-generation-change audit** over your self-authored Claude Code assets (rules / CLAUDE.md / skills / agents). When a new model generation ships, rules written to compensate for the previous generation's weaknesses can turn into **conflict cost** — contradictory instructions the model must silently resolve on every request. This skill finds them.
 
