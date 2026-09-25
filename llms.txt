@@ -1,29 +1,31 @@
 # generation-audit
 
-> An Agent Skill that audits self-authored Claude Code assets (rules / CLAUDE.md / skills / agents) against the live runtime layer (system prompt + tool descriptions) when a model generation changes. It captures the runtime layer in verbatim quotes, classifies mismatches as conflict / redundancy / drift, judges each with an intent / evidence / freshness / expiry frame, and hands the evidence dossier to per-asset-class stocktake skills for verdicts. It holds no verdicts itself.
+> An Agent Skill that is the single entry point for auditing self-authored Claude Code assets (rules / CLAUDE.md / output styles / skills / agents) when a new Claude model takes a role in a harness (judge tier, build tier, or everyday sessions). One run does two checks: a runtime cross-check of the assets against the system prompt and tool descriptions actually loaded at inference time (conflict / redundancy), and a dated-pattern scan delegated to `/claude-api prompt-audit`, the Claude API skill bundled with Claude Code. It applies High/Medium-confidence line fixes under explicit consent and hands whole-asset verdicts to per-asset-class stocktake skills.
 
-The premise: rules written to compensate for a previous model generation's weaknesses become conflict cost on the next generation — contradictory instructions co-loaded in the same context that the model must silently resolve. The canonical collation reference is what is actually loaded at inference time, not official docs (which are never loaded — divergence from them is drift, not conflict).
+The premise: rules written to compensate for an older model's weaknesses become conflict cost on the next model — contradictory instructions co-loaded in the same context that the model must silently resolve. The runtime layer is the collation reference for the first check because parts of it are injected from outside the config repo. The dated-pattern table is maintained by Anthropic inside the bundled claude-api skill, so the skill reads it at run time instead of copying it.
 
 ## Core model
 
-- **Runtime layer capture**: theme-driven verbatim quoting from the live session, with self-report caveats (zero detection ≠ no conflict; reproduce in a second session before acting).
-- **Three-way classification**: conflict (co-loaded contradiction — always for rules/CLAUDE.md, at fire-time for skills, at invocation for agents), redundancy (substrate already says it), drift (divergence from unloaded official guidance).
-- **Four-lens judgment**: intent / evidence / freshness / expiry. "Conflict = bad" is never mechanically applied — deliberate overrides exist.
-- **Verdict delegation**: evidence goes to rules-stocktake (rules), skill-stocktake (skills), agent-stocktake (agents); CLAUDE.md is handled inline with one-by-one confirmation.
+- **Phase 0 — target and scope**: the model that took the role, the assets that role reads; unmodified external copies and files another session is editing are audited but not changed.
+- **Phases 1–2 — runtime cross-check**: theme-by-theme verbatim quotes from a session running the target model in its real environment; mismatches classified as conflict (co-loaded disagreement, including ghost references) or redundancy (the runtime layer already says it). Zero findings means "not found by these questions".
+- **Phase 3 — dated-pattern scan**: `/claude-api prompt-audit`, sliced and run by read-only subagents in parallel; procedure and migration guide paths come from the claude-api skill's base directory (changes with the CLI version).
+- **Phase 4 — judge and apply**: four lenses (intent / evidence / freshness / expiry); dated-pattern High/Medium-confidence findings applied as line fixes — directly when fixes were requested, otherwise per group after diff approval; always-loaded files one diff at a time.
+- **Phase 5 — hand off and record**: runtime findings and whole-asset candidates go on; CLAUDE.md and output styles edited inline with per-item approval; rules / skills / agents go as evidence to rules-stocktake / skill-stocktake / agent-stocktake, which own the verdicts; applied lines recorded in the commit body.
 - **Encoded pitfalls**: machine verification (build/tests/hooks) is exempt from "delete verification steps"; direction-reversed instructions need inversion, not deletion.
 
 ## Files
 
-- [SKILL.md](skills/generation-audit/SKILL.md): the full skill definition — Phases 1–4, classification table, judgment frame, delegation map.
-- [README.md](README.md): overview, install, companion skills, provenance.
+- [SKILL.md](skills/generation-audit/SKILL.md): the full skill definition — Phases 0–5, classification table, judgment frame, application rules, delegation map.
+- [README.md](README.md): overview, requirements, install, companion skills, provenance.
 - [README.ja.md](README.ja.md): Japanese README.
 - [CHANGELOG.md](CHANGELOG.md): version history.
 
 ## Boundaries
 
-- NOT for routine single-layer audits (call the stocktake skills directly).
-- NOT for rule compliance measurement (that is skill-comply) or whole-config GC (that is config-gc).
-- First validated on the Claude 4 → Claude 5 generation change (2026-07; always-loaded residency 5,789 → 2,463 words).
+- Requires Claude Code with its bundled claude-api skill (Phase 3 engine).
+- Written for the author's harness: the body names `~/.claude` paths and ADR numbers (published in github.com/shimo4228/claude-harness/docs/adr); other harnesses substitute their own lint, reference checker, and writing conventions.
+- NOT for rewriting one skill (skill-creator), routine stocktakes (call them directly), rule compliance measurement (skill-comply), or whole-config GC (config-gc).
+- Provenance: Claude 4 → Claude 5 audit (2026-07; always-loaded rules 5,789 → 2,314 words); first dated-pattern scan for Fable 5.1 (2026-09-02; 3 High / 85 Medium); merged into this single entry for Opus 5.5 (2026-09-25; dated-pattern scan 107 findings, 64 applied, none specific to Opus 5.5).
 
 ## About
 
