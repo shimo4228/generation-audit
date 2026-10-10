@@ -16,17 +16,19 @@ The premise: rules written to compensate for an older model's weaknesses become 
 ## Files
 
 - [SKILL.md](skills/generation-audit/SKILL.md): the full skill definition — Phases 0–5, classification table, judgment frame, application rules, delegation map.
-- [README.md](README.md): overview, requirements, install, companion skills, provenance.
+- [README.md](README.md): overview, requirements, install, companion skills.
 - [README.ja.md](README.ja.md): Japanese README.
 - [CHANGELOG.md](CHANGELOG.md): version history.
 
 ## Boundaries
 
-- Requires Claude Code with its bundled claude-api skill (Phase 3 engine).
-- Written for the author's harness: the body names `~/.claude` paths and ADR numbers (published in github.com/shimo4228/claude-harness/docs/adr); other harnesses substitute their own lint, reference checker, and writing conventions.
-- NOT for rewriting one skill (skill-creator), routine stocktakes (call them directly), rule compliance measurement (skill-comply), or whole-config GC (config-gc).
+- Requires Claude Code with its bundled claude-api skill (Phase 3 engine), plus the skill-health skill at `~/.claude/skills/skill-health` and `uv` (Python 3.11+) for the post-fix reference scan (github.com/shimo4228/skill-health).
+- Written for the author's harness: the body names `~/.claude` paths, the unpublished `scripts/hooks/harness_lint.py`, and ADR numbers (published in github.com/shimo4228/claude-harness/docs/adr); other harnesses substitute their own lint, reference checker, and writing conventions.
+- Runs only when called as `/generation-audit` (`disable-model-invocation: true`).
+- Status: active, synced one way from the author's Claude Code harness by `scripts/sync-from-local.sh`; also shipped in the akc-cycle plugin as `/akc-cycle:generation-audit`, so this repository can trail the plugin between syncs.
+- NOT for rewriting one skill (skill-creator), routine stocktakes (call them directly), or rule compliance measurement (skill-comply).
 - Provenance: Claude 4 → Claude 5 audit (2026-07; always-loaded rules 5,789 → 2,314 words); first dated-pattern scan for Fable 5.1 (2026-09-02; 3 High / 85 Medium); merged into this single entry for Opus 5.5 (2026-09-25; dated-pattern scan 107 findings, 64 applied, none specific to Opus 5.5).
 
 ## About
 
-Implements the model-generation trigger of Scaffold Dissolution in the Agent Knowledge Cycle (AKC, DOI 10.5281/zenodo.19200726). Companion of rules-stocktake, skill-stocktake, and agent-stocktake. Author: shimo4228. License: MIT.
+Implements the model-generation trigger of Scaffold Dissolution in the Agent Knowledge Cycle (AKC, DOI 10.5281/zenodo.19200726). Companion of rules-stocktake, skill-stocktake, and agent-stocktake. The author's other practice lines are listed in the hub, github.com/shimo4228/shimo4228. Author: shimo4228. License: MIT.
