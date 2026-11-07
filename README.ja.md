@@ -6,7 +6,7 @@ Language: [English](README.md) | 日本語
 
 新しい Claude のモデルがハーネスの役（仕事を渡して受け入れる判断役、それを実装する build 役、日常のセッション）に就いたときに、自作の Claude Code 資産（rules / CLAUDE.md / output style / skills / agents）を監査する [Agent Skill](https://agentskills.io/specification)（英語）です。旧いモデルの弱点を補うために書いたルールは、次のモデルでは**衝突コスト**、つまりモデルが毎リクエスト黙って解決させられる矛盾した指示に変わることがあります。このスキルは 1 回の実行でそれを見つけ、安全に直せる行は直し、残りは証拠を添えて承認を求めるか、rules・skills・agents を点検するスキル（[連携するスキル](#連携するスキル) 参照）に渡します。
 
-行の修正をそのまま適用するのは、依頼が修正まで含むとき（「直して」「仕上げて」）だけです。そうでなければグループごとに diff を示して承認を得てから適用し、常時ロードされるファイルはどちらの場合も 1 件ずつ diff を示します。関連する記事とリポジトリは [著者のほかの仕事](#著者のほかの仕事) にまとめています。
+行の修正をそのまま適用するのは、依頼が修正まで含むとき（「直して」「仕上げて」）だけです。そうでなければ行の修正をすべて 1 枚の report（[harness-stocktake](https://github.com/shimo4228/harness-stocktake) の report の形）にまとめ、1 回の承認で受け入れたものを適用します。常時ロードされるファイルの行は、どちらの場合もその report を通し、正確な diff を添えます。関連する記事とリポジトリは [著者のほかの仕事](#著者のほかの仕事) にまとめています。
 
 ## 1 回の実行で 2 つの検査
 
@@ -50,7 +50,7 @@ clone で入れた場合、スキルはスキャナを `~/.claude/skills/skill-h
 ## 前提と、自分のハーネスで使うとき
 
 - **Claude Code** と、同梱の `claude-api` スキルが必要です。古くなった書き方の検査は、そのスキルのベースディレクトリから `shared/prompt-audit.md` と `shared/model-migration.md` を読みます。この場所は CLI の版で変わるので、スキルは実行のたびに `/claude-api` が示す場所から読みます。
-- **著者のハーネス向けに書かれています。** 本文は `~/.claude` の path（`rules/common/akc-cycle.md`、`scripts/hooks/harness_lint.py`、`skill-creator` の書き方の規則）を名指しし、判断の記録を番号（ADR-00NN。[claude-harness](https://github.com/shimo4228/claude-harness/tree/main/docs/adr) で公開）で引いています。版に縛られた書き方を止める `harness_lint.py` は公開されていません。別のハーネスでは、これと書き方の規則を自分の lint と規約に置き換え、上で入れた `skill-health` の参照スキャナはそのまま使うか置き換えてください。監査の手順そのものはそれらに依存しません。
+- **著者のハーネス向けに書かれています。** 本文は `~/.claude` の path（`rules/common/akc-cycle.md`、`scripts/hooks/harness_lint.py`、`skill-writer` の書き方の規則）を名指しし、判断の記録を番号（ADR-00NN。[claude-harness](https://github.com/shimo4228/claude-harness/tree/main/docs/decision-history) で公開）で引いています。版に縛られた書き方を止める `harness_lint.py` は公開されていません。別のハーネスでは、これと書き方の規則を自分の lint と規約に置き換え、上で入れた `skill-health` の参照スキャナはそのまま使うか置き換えてください。監査の手順そのものはそれらに依存しません。
 
 ## 手順
 
@@ -58,8 +58,8 @@ clone で入れた場合、スキルはスキャナを `~/.claude/skills/skill-h
 1. **Phase 1 — runtime 層の採取**: 対象のモデルを実際の環境で動かしたセッションで、テーマを 1 つずつ逐語で引用させます。検出ゼロは「この質問では見つからなかった」という意味で、「競合がない」という意味ではありません。
 2. **Phase 2 — 分類**: 食い違いを**競合**（資産と runtime 層が同時にロードされたまま食い違う）と**冗長**（runtime 層がすでに同じことを言っている）に分けます。もう存在しない設定やツールへの幽霊参照も競合に数えます。
 3. **Phase 3 — dated pattern の走査**: `/claude-api prompt-audit` を回します。範囲が大きいときは、対象を分けて read-only の subagent で並列に回します。各所見は `file:line`、引用した行、パターン、対象モデルにとってなぜ古いか、確度、対処の形で出ます。
-4. **Phase 4 — 判定と適用**: 各件を 4 つの問いで判定します。意図（上書きは意図的か）、根拠（理由の記録は残っているか）、鮮度（前提はこのモデルでも成り立つか）、失効条件（宣言したトリガーは発火したか）です。dated pattern の所見のうち確度 High と Medium は、行の修正として適用します。依頼が修正まで含んでいればそのまま、そうでなければグループごとに diff を示し、承認を得てから適用します。確度 Low と `flag` の所見は、チャットに出す台帳に載せるだけです。常時ロードされるファイル（rules・CLAUDE.md・output style）は、どちらの場合も 1 件ずつ diff を示します。
-5. **Phase 5 — 委譲と記録**: runtime 照合の所見と、資産ごと消える・統合される候補はここに来ます。CLAUDE.md と output style は、このスキルが 1 件ずつ承認を得て直します。rules・skills・agents は、証拠として資産の種類ごとの stocktake スキルに渡し、処分はそちらが決めます。適用した行は commit の本文に記録します。
+4. **Phase 4 — 判定と適用**: 各件を 4 つの問いで判定します。意図（上書きは意図的か）、根拠（理由の記録は残っているか）、鮮度（前提はこのモデルでも成り立つか）、失効条件（宣言したトリガーは発火したか）です。dated pattern の所見のうち確度 High と Medium は、行の修正として適用します。依頼が修正まで含んでいればそのまま、そうでなければ 1 枚の report の項目にして、1 回の承認で適用します。確度 Low と `flag` の所見は、チャットに出す台帳に載せるだけです。常時ロードされるファイル（rules・CLAUDE.md・output style）の行は、どちらの場合もその report を通し、1 件ずつ正確な diff を添えます。
+5. **Phase 5 — 委譲と記録**: runtime 照合の所見と、資産ごと消える・統合される候補はここに来ます。CLAUDE.md と output style への修正案は、行の修正と同じ report に入れます。rules・skills・agents は、証拠として資産の種類ごとの stocktake スキルに渡し、処分はそちらが決めます。`/harness-stocktake` は 3 つをまとめて 1 枚の report に回せます。適用した行は commit の本文に記録します。
 
 ## 手順に織り込んだ落とし穴
 
@@ -96,6 +96,6 @@ generation-audit は、新しい Claude のモデルがハーネスの役（判�
 
 例: Opus 5.5 の回（2026-09-25）では、dated pattern の走査が 107 件を見つけて 64 件を適用しました。ガイドが Opus 5.5 で新しく挙げる型に当たるものは 0 件で、所見は Opus 5 から引き継がれた型、主に経緯の語りと版に縛られた書き方でした。runtime 照合の出自である Claude 4 → Claude 5 の監査（2026-07）は、常駐する rules を 5,789 語から 2,314 語に減らし、新しい `EnterPlanMode` の tool description と食い違う plan mode の禁止を見つけました。Opus 5.5 の回の runtime 照合は略式で行い、意図的な上書き 1 件を見つけてそのまま残しました。
 
-リンク: [skills/generation-audit/SKILL.md](skills/generation-audit/SKILL.md)（英語）がスキル本体、[llms.txt](llms.txt)（英語）が機械可読の要約、[CHANGELOG.md](CHANGELOG.md)（英語）がリリース履歴、判断の記録は [claude-harness docs/adr](https://github.com/shimo4228/claude-harness/tree/main/docs/adr) にあります。このスキルは [Agent Knowledge Cycle (AKC)](https://github.com/shimo4228/agent-knowledge-cycle) の Curate フェーズの一部を実装しています。AKC の concept DOI（常に最新版へつながる代表 DOI）は [10.5281/zenodo.19200726](https://doi.org/10.5281/zenodo.19200726) で、引用はこの DOI で行ってください。サイクル全体をインストールできる形は [akc-cycle](https://github.com/shimo4228/akc-cycle)（英語）です。
+リンク: [skills/generation-audit/SKILL.md](skills/generation-audit/SKILL.md)（英語）がスキル本体、[llms.txt](llms.txt)（英語）が機械可読の要約、[CHANGELOG.md](CHANGELOG.md)（英語）がリリース履歴、判断の記録は [claude-harness docs/decision-history](https://github.com/shimo4228/claude-harness/tree/main/docs/decision-history) にあります。このスキルは [Agent Knowledge Cycle (AKC)](https://github.com/shimo4228/agent-knowledge-cycle) の Curate フェーズの一部を実装しています。AKC の concept DOI（常に最新版へつながる代表 DOI）は [10.5281/zenodo.19200726](https://doi.org/10.5281/zenodo.19200726) で、引用はこの DOI で行ってください。サイクル全体をインストールできる形は [akc-cycle](https://github.com/shimo4228/akc-cycle)（英語）です。
 
 </details>

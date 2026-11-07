@@ -6,6 +6,17 @@ All notable changes to this skill are documented here. Format loosely follows
 
 ## [Unreleased]
 
+### Changed
+
+- Phase 4 / 5 approval: without an explicit request for fixes, every line fix and
+  every proposed CLAUDE.md / output-style edit goes into one report (the report
+  format of [harness-stocktake](https://github.com/shimo4228/harness-stocktake))
+  that the author approves once, replacing per-group and per-item approval.
+  Always-loaded lines always go through that report with their exact diff.
+- Renamed references: `skill-creator` → `skill-writer`, `adr-writer` →
+  `decision-history`; the decision records now live in claude-harness
+  `docs/decision-history/`.
+
 ### Removed
 
 - `.claude-plugin/marketplace.json`. It was not in Claude Code's marketplace format (no `owner`, no `plugins`), so `/plugin marketplace add` on this repo failed. Install the skill as a plugin through [akc-cycle](https://github.com/shimo4228/akc-cycle), which bundles it.
